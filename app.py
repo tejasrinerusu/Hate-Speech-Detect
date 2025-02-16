@@ -3,11 +3,12 @@ import pickle
 from fastapi import FastAPI
 import os
 
-from mangum import Mangum  # Add this for AWS Lambda compatibility
-
 # Load the model and vectorizer
 model_path = os.path.join(os.path.dirname(__file__), "hate_speech_model.pkl")
 vectorizer_path = os.path.join(os.path.dirname(__file__), "vectorizer.pkl")
+
+if not os.path.exists(model_path) or not os.path.exists(vectorizer_path):
+    raise FileNotFoundError("Model files not found! Make sure 'hate_speech_model.pkl' and 'vectorizer.pkl' are uploaded.")
 
 with open(model_path, "rb") as model_file:
     model = pickle.load(model_file)
@@ -40,6 +41,3 @@ iface = gr.Interface(
 )
 
 app = gr.mount_gradio_app(app, iface, path="/")
-
-handler = Mangum(app)  # Required for Vercel
-
